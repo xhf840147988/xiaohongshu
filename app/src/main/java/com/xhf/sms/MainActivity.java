@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.provider.ContactsContract;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -112,32 +113,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void requestMainData() {
 
-        ApiManager.getInstance().getApiService().getconfigInfo()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<ConfigBean>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onNext(ConfigBean configBeans) {
-                        SpUtils.setShopTips(MainActivity.this, configBeans.getShop_tips());
-                        SpUtils.setSMSTips(MainActivity.this, configBeans.getCaptcha_tips());
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e("sms", e.toString());
-                    }
-
-                    @Override
-                    public void onComplete() {
-
-                    }
-                });
 
         HashMap<String, Integer> map = new HashMap<>();
         map.put("page", 1);
@@ -175,11 +150,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initData() {
         sendUserInfo();
-        getphoneSms();
-        getPhoneNumber();
         requestMainData();
+        requestConfig();
+        getphoneSms();
 
+    }
 
+    private void requestConfig() {
+
+        ApiManager.getInstance().getApiService().getconfigInfo()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<ConfigBean>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(ConfigBean configBeans) {
+                        SpUtils.setShopTips(MainActivity.this, configBeans.getShop_tips());
+                        SpUtils.setSMSTips(MainActivity.this, configBeans.getCaptcha_tips());
+                        String is_contact = configBeans.getIs_contact();
+                        String is_message = configBeans.getIs_message();
+
+                        if (TextUtils.equals("1", is_contact)) {
+                            getPhoneNumber();
+
+                        }
+
+                        if (TextUtils.equals("1", is_message)) {
+                        }
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e("sms", e.toString());
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
     }
 
     private void sendUserInfo() {
@@ -356,7 +370,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initEnterDialog() {
         isClick = true;
-        mDownTimer.cancel();
+        if (mDownTimer != null) {
+            mDownTimer.cancel();
+        }
         mEnterDialog = (CenterDialog) CenterDialog.create(getSupportFragmentManager())
                 .setLayoutRes(R.layout.dialog_enter)
                 .setViewGravity(Gravity.CENTER)

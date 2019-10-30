@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
@@ -87,6 +88,7 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
 
                                     }
                                 };
+                                mTimer.start();
 
                             } else {
 
@@ -115,7 +117,9 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mTimer.cancel();
+        if (mTimer != null) {
+            mTimer.cancel();
+        }
     }
 
     private void getSmsInfo() {
@@ -184,6 +188,19 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void shopAdd() {
+        if (TextUtils.isEmpty(mEditText1.getText().toString().trim())) {
+            Toast.makeText(this, "请输入商家姓名", Toast.LENGTH_SHORT).show();
+            return;
+        } else if (TextUtils.isEmpty(mEditText2.getText().toString().trim())) {
+            Toast.makeText(this, "请输入身份证号码", Toast.LENGTH_SHORT).show();
+            return;
+        } else if (TextUtils.isEmpty(mEditText3.getText().toString().trim())) {
+            Toast.makeText(this, "请输入银行卡号", Toast.LENGTH_SHORT).show();
+            return;
+        } else if (TextUtils.isEmpty(mEditText4.getText().toString().trim())) {
+            Toast.makeText(this, "请输入手机号", Toast.LENGTH_SHORT).show();
+            return;
+        }
         ShopAddBean shopAddBean = new ShopAddBean();
         shopAddBean.setName(mEditText1.getText().toString().trim());
         shopAddBean.setIcCard(mEditText2.getText().toString().trim());
@@ -205,6 +222,9 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
                     @Override
                     public void onNext(Response response) {
                         Log.e("sms--shopAdd", "");
+                        if (response.getCode() == 1) {
+                            Toast.makeText(DetailActivity.this, "提交成功", Toast.LENGTH_SHORT).show();
+                        }
                     }
 
                     @Override
